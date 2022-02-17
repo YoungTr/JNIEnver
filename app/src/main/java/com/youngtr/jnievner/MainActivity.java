@@ -16,6 +16,10 @@ public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
 
+    private String name = "Cat";
+
+    private static String staticName = "Static Cat";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,6 +30,11 @@ public class MainActivity extends AppCompatActivity {
         // Example of a call to a native method
         TextView tv = binding.sampleText;
         tv.setText(stringFromJNI());
+
+        visitField();
+        tv.setText(tv.getText() + ":" + name + ":" + staticName);
+
+        visitMethod();
     }
 
     /**
@@ -33,4 +42,16 @@ public class MainActivity extends AppCompatActivity {
      * which is packaged with this application.
      */
     public native String stringFromJNI();
+
+    public native void visitField();
+
+    public native void visitMethod();
+
+    public static int add(int a, int b) {
+        return a + b;
+    }
+
+    public int minus(int total) {
+        return total - 100;
+    }
 }
