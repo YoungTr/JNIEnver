@@ -3,9 +3,12 @@ package com.youngtr.jnievner;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
 
 import com.youngtr.jnievner.databinding.ActivityMainBinding;
+
+import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -35,6 +38,14 @@ public class MainActivity extends AppCompatActivity {
         tv.setText(tv.getText() + ":" + name + ":" + staticName);
 
         visitMethod();
+
+        Person person = getPerson();
+        Log.d("JNIEnver", person.toString());
+
+        Person[] persons = getPersons(new String[]{"James", "Bob", "Curry"});
+        Log.d("JNIEnver", Arrays.toString(persons));
+
+        dynamicRegister("Tom");
     }
 
     /**
@@ -54,4 +65,10 @@ public class MainActivity extends AppCompatActivity {
     public int minus(int total) {
         return total - 100;
     }
+
+    public native Person getPerson();
+
+    public native Person[] getPersons(String[] names);
+
+    public native void dynamicRegister(String name);
 }
