@@ -1,6 +1,7 @@
 #include <jni.h>
 #include <string>
 #include <android/log.h>
+#include <sys/shm.h>
 
 #define TAG "JNIEnver"
 
@@ -100,6 +101,7 @@ Java_com_youngtr_jnievner_MainActivity_getPersons(JNIEnv *env, jobject thiz, job
         env->SetObjectArrayElement(j_array, i, obj);
 
     }
+
     return j_array;
 }
 
