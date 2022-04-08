@@ -1,14 +1,10 @@
 #include <jni.h>
 #include <string>
-#include <android/log.h>
 #include <sys/shm.h>
 #include "mbedtls/aes.h"
-
-#define TAG "JNIEnver"
-
-#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__)
-#define LOGI(...) __android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
+#include "log.h"
+#include "zlib_example.h"
+#include "zlib_util.h"
 
 #define NUM_METHODS(x) ((int) (sizeof(x) / sizeof((x)[0]))) //获取方法的数量
 
@@ -199,4 +195,37 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     env->DeleteLocalRef(j_cls);
 
     return JNI_VERSION_1_6;
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_youngtr_jnievner_MainActivity_compress(JNIEnv *env, jobject thiz, jstring source) {
+    char *str = const_cast<char *>(env->GetStringUTFChars(source, nullptr));
+    compress_stream(str);
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_youngtr_jnievner_MainActivity_initFile(JNIEnv *env, jobject thiz, jstring path) {
+    char *file_path = const_cast<char *>(env->GetStringUTFChars(path, nullptr));
+    init_file(file_path);
+}
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_com_youngtr_jnievner_MainActivity_getStream(JNIEnv *env, jobject thiz) {
+    char stream[1024];
+    uncompress_stream(stream);
+    return env->NewStringUTF(stream);
+
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_youngtr_jnievner_MainActivity_zlib(JNIEnv *env, jobject thiz, jstring source,
+                                            jstring dest) {
+    char *s = const_cast<char *>(env->GetStringUTFChars(source, nullptr));
+    char *d = const_cast<char *>(env->GetStringUTFChars(dest, nullptr));
+    FILE *sp = fopen(s, "ab+");
+    FILE *dp = fopen(d, "ab+");
+    def(sp, dp, Z_DEFAULT_COMPRESSION);
+
+    inf(dp, sp);
 }

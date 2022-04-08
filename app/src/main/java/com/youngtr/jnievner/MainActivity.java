@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import com.youngtr.jnievner.databinding.ActivityMainBinding;
 
+import java.io.File;
 import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
@@ -46,6 +47,17 @@ public class MainActivity extends AppCompatActivity {
         Log.d("JNIEnver", Arrays.toString(persons));
 
         dynamicRegister("Tom");
+
+        initFile(getFilesDir().getAbsolutePath() + File.separator + "test.log");
+
+
+        compress("123456789abcdefghijklmnopqrstuvwxyz123456789abcdefghijklmnopqrstuvwxyz123456789abcdefghijklmnopqrstuvwxyz");
+
+        zlib(getFilesDir().getAbsolutePath() + File.separator + "test.log",
+                getFilesDir().getAbsolutePath() + File.separator + "test1.log");
+
+//        String stream = getStream();
+//        Log.d("JNIEnver", "get stream: " + stream);
     }
 
     /**
@@ -71,4 +83,12 @@ public class MainActivity extends AppCompatActivity {
     public native Person[] getPersons(String[] names);
 
     public native void dynamicRegister(String name);
+
+    public native void initFile(String path);
+
+    public native void compress(String source);
+
+    public native String getStream();
+
+    public native void zlib(String source, String dest);
 }

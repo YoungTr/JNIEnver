@@ -30,7 +30,9 @@ add_library( # Sets the name of the library.
         SHARED
 
         # Provides a relative path to your source file(s).
-        native-lib.cpp)
+        native-lib.cpp
+        zlib_example.c
+        zlib_util.c)
 
 #target_include_directories(jnievner PUBLIC ${MBEDTSL_INCLUDE})
 
