@@ -136,6 +136,49 @@ Java_com_youngtr_jnievner_MainActivity_getPersons(JNIEnv *env, jobject thiz, job
     return j_array;
 }
 
+void mbedtls_aes_test(void)
+{
+    int i;
+
+    mbedtls_aes_context aes_ctx;
+
+    //密钥数值
+    unsigned char key[16] = {'c', 'b', 'c', 'p', 'a', 's', 's', 'w', 'o', 'r', 'd', '1', '2', '3', '4'};
+    //iv
+    unsigned char iv[16];
+
+    //明文空间
+    unsigned char plain[64] = "hello_worled1234567890abcdefghijklmnopqrstuvwxyz12389";
+    //解密后明文的空间
+    unsigned char dec_plain[64]={0};
+    //密文空间
+    unsigned char cipher[64]={0};
+
+
+    mbedtls_aes_init( &aes_ctx );
+
+    //设置加密密钥
+    printf("plain:%s\r\n", plain);
+    mbedtls_aes_setkey_enc( &aes_ctx, key, 128);
+    for(i = 0; i < 16; i++)
+    {
+        iv[i] = 0x01;
+    }
+    mbedtls_aes_crypt_cbc(&aes_ctx, MBEDTLS_AES_ENCRYPT, 64, iv, plain, cipher);
+    printf("cipher:%s\r\n", cipher);
+
+    //设置解密密钥
+    mbedtls_aes_setkey_dec(&aes_ctx, key, 128);
+    for(i = 0; i < 16; i++)
+    {
+        iv[i] = 0x01;
+    }
+    mbedtls_aes_crypt_cbc(&aes_ctx, MBEDTLS_AES_DECRYPT, 64, iv, cipher, dec_plain);
+    printf("dec_plain:%s\r\n", dec_plain);
+    printf("\r\n");
+    mbedtls_aes_free( &aes_ctx );
+}
+
 
 extern "C"
 JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
