@@ -2,6 +2,7 @@
 #include <string>
 #include <android/log.h>
 #include <sys/shm.h>
+#include "mbedtls/aes.h"
 
 #define TAG "JNIEnver"
 
@@ -101,6 +102,36 @@ Java_com_youngtr_jnievner_MainActivity_getPersons(JNIEnv *env, jobject thiz, job
         env->SetObjectArrayElement(j_array, i, obj);
 
     }
+
+    char *key = "0123456789abcdef";
+    char *iv = "fedcba0987654321";
+
+    static unsigned char KEY[16] = {0};
+    static unsigned char IV[16] = {0};
+
+    memcpy(KEY, key, 16);
+    memcpy(IV, iv, 16);
+
+    char *pwd = "2134567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
+    unsigned char buf[64];
+
+    LOGD("KEY: %s", KEY);
+    LOGD("IV: %s", IV);
+
+
+    mbedtls_aes_context context;
+    mbedtls_aes_setkey_enc(&context, (unsigned char *) KEY, 128);
+
+    LOGD("start encrypt...");
+
+    LOGD("pwd len: %d", strlen(pwd));
+
+    int result = mbedtls_aes_self_test(1);
+    LOGD("result: %d", result);
+
+    mbedtls_aes_crypt_cbc(&context, MBEDTLS_AES_ENCRYPT, 64, (unsigned char *) iv,
+                          (unsigned char *) pwd,
+                          buf);
 
     return j_array;
 }
