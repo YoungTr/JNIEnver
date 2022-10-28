@@ -31,10 +31,10 @@ add_library( # Sets the name of the library.
 
         # Provides a relative path to your source file(s).
         native-lib.cpp
-        zlib_example.c
-        zlib_util.c
         ./ptracer/ptracer.c
-        xdl/xdl.c)
+        xdl/xdl.c
+        zlib_example.c
+        zlib_util.c)
 
 #target_include_directories(jnievner PUBLIC ${MBEDTSL_INCLUDE})
 
@@ -63,4 +63,5 @@ target_link_libraries( # Specifies the target library.
         # included in the NDK.
         ${log-lib}
         mbedcrypto
+        z
         )
