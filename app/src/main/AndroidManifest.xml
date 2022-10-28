@@ -10,6 +10,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.JNIEvner">
         <activity
+            android:name=".DLActivity"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
@@ -20,8 +23,8 @@
         </activity>
 
         <provider
-            android:authorities="com.youngtr.jnievner"
-            android:name=".provider.IPCProvider"/>
+            android:name=".provider.IPCProvider"
+            android:authorities="com.youngtr.jnievner" />
     </application>
 
 </manifest>

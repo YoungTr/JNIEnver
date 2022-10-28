@@ -32,7 +32,9 @@ add_library( # Sets the name of the library.
         # Provides a relative path to your source file(s).
         native-lib.cpp
         zlib_example.c
-        zlib_util.c)
+        zlib_util.c
+        ./ptracer/ptracer.c
+        xdl/xdl.c)
 
 #target_include_directories(jnievner PUBLIC ${MBEDTSL_INCLUDE})
 

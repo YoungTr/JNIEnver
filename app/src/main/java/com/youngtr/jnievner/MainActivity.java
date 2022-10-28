@@ -38,6 +38,10 @@ public class MainActivity extends AppCompatActivity {
         visitField();
         tv.setText(tv.getText() + ":" + name + ":" + staticName);
 
+        tv.setOnClickListener(view -> {
+            DLActivity.start(this);
+        });
+
         visitMethod();
 
         Person person = getPerson();

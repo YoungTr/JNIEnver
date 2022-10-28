@@ -1,10 +1,19 @@
 #include <jni.h>
 #include <string>
 #include <sys/shm.h>
+#include <dlfcn.h>
 #include "mbedtls/aes.h"
 #include "log.h"
 #include "zlib_example.h"
 #include "zlib_util.h"
+#include "ptracer/ptracer.h"
+#include "xdl/xdl.h"
+
+#define TAG "JNIEnver"
+
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__)
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
 
 #define NUM_METHODS(x) ((int) (sizeof(x) / sizeof((x)[0]))) //获取方法的数量
 
@@ -19,7 +28,7 @@ extern "C" JNIEXPORT jstring JNICALL
 Java_com_youngtr_jnievner_MainActivity_stringFromJNI(
         JNIEnv *env,
         jobject /* this */) {
-    std::string hello = "Hello from C++";
+    std::string hello = "Hello from C++12";
     return env->NewStringUTF(hello.c_str());
 }
 extern "C"
@@ -99,65 +108,65 @@ Java_com_youngtr_jnievner_MainActivity_getPersons(JNIEnv *env, jobject thiz, job
 
     }
 
-    char *key = "0123456789abcdef";
-    char *iv = "fedcba0987654321";
+//    char *key = "0123456789abcdef";
+//    char *iv = "fedcba0987654321";
+//
+//    static unsigned char KEY[16] = {0};
+//    static unsigned char IV[16] = {0};
+//
+//    memcpy(KEY, key, 16);
+//    memcpy(IV, iv, 16);
+//
+//    char *pwd = "2134567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
+//    unsigned char buf[64];
+//
+//    LOGD("KEY: %s", KEY);
+//    LOGD("IV: %s", IV);
+//
+//
+//    mbedtls_aes_context context;
+//    mbedtls_aes_setkey_enc(&context, (unsigned char *) KEY, 128);
+//
+//    LOGD("start encrypt...");
+//
+//    LOGD("pwd len: %d", strlen(pwd));
+//
+//    int result = mbedtls_aes_self_test(1);
+//    LOGD("result: %d", result);
+//
+//    mbedtls_aes_crypt_cbc(&context, MBEDTLS_AES_ENCRYPT, 64, (unsigned char *) iv,
+//                          (unsigned char *) pwd,
+//                          buf);
 
-    static unsigned char KEY[16] = {0};
-    static unsigned char IV[16] = {0};
-
-    memcpy(KEY, key, 16);
-    memcpy(IV, iv, 16);
-
-    char *pwd = "2134567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
-    unsigned char buf[64];
-
-    LOGD("KEY: %s", KEY);
-    LOGD("IV: %s", IV);
-
-
-    mbedtls_aes_context context;
-    mbedtls_aes_setkey_enc(&context, (unsigned char *) KEY, 128);
-
-    LOGD("start encrypt...");
-
-    LOGD("pwd len: %d", strlen(pwd));
-
-    int result = mbedtls_aes_self_test(1);
-    LOGD("result: %d", result);
-
-    mbedtls_aes_crypt_cbc(&context, MBEDTLS_AES_ENCRYPT, 64, (unsigned char *) iv,
-                          (unsigned char *) pwd,
-                          buf);
 
     return j_array;
 }
 
-void mbedtls_aes_test(void)
-{
+void mbedtls_aes_test(void) {
     int i;
 
     mbedtls_aes_context aes_ctx;
 
     //密钥数值
-    unsigned char key[16] = {'c', 'b', 'c', 'p', 'a', 's', 's', 'w', 'o', 'r', 'd', '1', '2', '3', '4'};
+    unsigned char key[16] = {'c', 'b', 'c', 'p', 'a', 's', 's', 'w', 'o', 'r', 'd', '1', '2', '3',
+                             '4'};
     //iv
     unsigned char iv[16];
 
     //明文空间
     unsigned char plain[64] = "hello_worled1234567890abcdefghijklmnopqrstuvwxyz12389";
     //解密后明文的空间
-    unsigned char dec_plain[64]={0};
+    unsigned char dec_plain[64] = {0};
     //密文空间
-    unsigned char cipher[64]={0};
+    unsigned char cipher[64] = {0};
 
 
-    mbedtls_aes_init( &aes_ctx );
+    mbedtls_aes_init(&aes_ctx);
 
     //设置加密密钥
-    printf("plain:%s\r\n", plain);
-    mbedtls_aes_setkey_enc( &aes_ctx, key, 128);
-    for(i = 0; i < 16; i++)
-    {
+    LOGD("plain:%s\r\n", plain);
+    mbedtls_aes_setkey_enc(&aes_ctx, key, 128);
+    for (i = 0; i < 16; i++) {
         iv[i] = 0x01;
     }
     mbedtls_aes_crypt_cbc(&aes_ctx, MBEDTLS_AES_ENCRYPT, 64, iv, plain, cipher);
@@ -165,14 +174,13 @@ void mbedtls_aes_test(void)
 
     //设置解密密钥
     mbedtls_aes_setkey_dec(&aes_ctx, key, 128);
-    for(i = 0; i < 16; i++)
-    {
+    for (i = 0; i < 16; i++) {
         iv[i] = 0x01;
     }
     mbedtls_aes_crypt_cbc(&aes_ctx, MBEDTLS_AES_DECRYPT, 64, iv, cipher, dec_plain);
     printf("dec_plain:%s\r\n", dec_plain);
     printf("\r\n");
-    mbedtls_aes_free( &aes_ctx );
+    mbedtls_aes_free(&aes_ctx);
 }
 
 
@@ -184,7 +192,8 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     }
 
     jclass j_cls = env->FindClass("com/youngtr/jnievner/MainActivity");
-    JNINativeMethod method[] = {{"dynamicRegister", "(Ljava/lang/String;)V", (void *) nativeRegister}};
+    JNINativeMethod method[] = {
+            {"dynamicRegister", "(Ljava/lang/String;)V", (void *) nativeRegister}};
 
     // 注册方法
     jint r = env->RegisterNatives(j_cls, method, NUM_METHODS(method));
@@ -193,6 +202,8 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     }
 
     env->DeleteLocalRef(j_cls);
+
+    mbedtls_aes_test();
 
     return JNI_VERSION_1_6;
 }
@@ -228,4 +239,20 @@ Java_com_youngtr_jnievner_MainActivity_zlib(JNIEnv *env, jobject thiz, jstring s
     def(sp, dp, Z_DEFAULT_COMPRESSION);
 
     inf(dp, sp);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_youngtr_jnievner_DLActivity_nativeDLOpen(JNIEnv *env, jobject thiz) {
+
+    void *handle = dlopen("libdl.so", RTLD_NOW);
+    LOGD("handler: %d", (uintptr_t) handle);
+    if (handle != NULL) {
+        void *open = dlsym(handle, "__loader_dlopen");
+        LOGD("open: 0x%u", (uintptr_t) open);
+    }
+
+    xdl_iterate_by_link("/apex/com.android.art/lib/libart.so");
+
+//xdl_iterate_by_maps("/apex/com.android.art/lib/libart.so");
 }
