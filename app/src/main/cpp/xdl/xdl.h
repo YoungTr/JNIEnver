@@ -13,6 +13,12 @@ int xdl_iterate_by_maps(char *file_path);
 
 int xdl_iterate_by_link(const char *file_path);
 
+void *xdl_open(const char *filename);
+
+void *xdl_close(void *handle);
+
+void *xdl_sym(void *handle, const char *symbol)
+
 #endif //JNIEVNER_XDL_H
 
 

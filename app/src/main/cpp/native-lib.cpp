@@ -245,14 +245,17 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_youngtr_jnievner_DLActivity_nativeDLOpen(JNIEnv *env, jobject thiz) {
 
-    void *handle = dlopen("libdl.so", RTLD_NOW);
-    LOGD("handler: %d", (uintptr_t) handle);
-    if (handle != NULL) {
-        void *open = dlsym(handle, "__loader_dlopen");
-        LOGD("open: 0x%u", (uintptr_t) open);
-    }
+//    void *handle = dlopen("libdl.so", RTLD_NOW);
+//    LOGD("handler: %d", (uintptr_t) handle);
+//    if (handle != NULL) {
+//        void *open = dlsym(handle, "__loader_dlopen");
+//        LOGD("open: 0x%u", (uintptr_t) open);
+//    }
 
-    xdl_iterate_by_link("/apex/com.android.art/lib/libart.so");
+//    xdl_iterate_by_link("/apex/com.android.art/lib/libart.so");
+    void *handler = xdl_open("/apex/com.android.art/lib/libart.so");
+    LOGD("handler: 0x%X", (uintptr_t) handler);
+
 
 //xdl_iterate_by_maps("/apex/com.android.art/lib/libart.so");
 }
