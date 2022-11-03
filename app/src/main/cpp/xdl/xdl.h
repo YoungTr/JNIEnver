@@ -17,7 +17,7 @@ void *xdl_open(const char *filename);
 
 void *xdl_close(void *handle);
 
-void *xdl_sym(void *handle, const char *symbol)
+void *xdl_sym(void *handle, const char *symbol);
 
 #endif //JNIEVNER_XDL_H
 

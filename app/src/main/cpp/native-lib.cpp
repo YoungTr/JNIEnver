@@ -255,6 +255,11 @@ Java_com_youngtr_jnievner_DLActivity_nativeDLOpen(JNIEnv *env, jobject thiz) {
 //    xdl_iterate_by_link("/apex/com.android.art/lib/libart.so");
     void *handler = xdl_open("/apex/com.android.art/lib/libart.so");
     LOGD("handler: 0x%X", (uintptr_t) handler);
+    void *suspend = nullptr;
+    if (nullptr != handler) {
+       suspend =  xdl_sym(handler, "_ZN3art16ScopedSuspendAllC1EPKcb");
+    }
+    LOGD("suspend: 0x%X", (uintptr_t) suspend);
 
 
 //xdl_iterate_by_maps("/apex/com.android.art/lib/libart.so");

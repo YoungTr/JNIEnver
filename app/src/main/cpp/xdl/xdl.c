@@ -177,7 +177,7 @@ static int xdl_dynsym_load(xdl_t *self) {
     for (size_t i = 0; i < self->dlpi_phnum; ++i) {
         const ElfW(Phdr) *phdr = &(self->dlpi_phdr[i]);
         if (PT_DYNAMIC == phdr->p_type) {
-            dynamic = (ElfW(Dyn) *) (self->load_bias = phdr->p_vaddr);
+            dynamic = (ElfW(Dyn) *) (self->load_bias + phdr->p_vaddr);
             break;
         }
 
@@ -186,7 +186,7 @@ static int xdl_dynsym_load(xdl_t *self) {
     if (NULL == dynamic) return -1;
 
     // iterate the dynamic segment
-    for (ElfW(Dyn) *entry = dynamic; entry && entry->d_tag != DT_NULL; entry++) {
+    for (ElfW(Dyn) *entry = dynamic; NULL != entry && entry->d_tag != DT_NULL; entry++) {
         switch (entry->d_tag) {
             case DT_SYMTAB: // .dynsym
                 self->dynsym = (ElfW(Sym) *) (self->load_bias + entry->d_un.d_ptr);
@@ -194,17 +194,19 @@ static int xdl_dynsym_load(xdl_t *self) {
             case DT_STRTAB: // .dynstr
                 self->dynstr = (const char *) (self->load_bias + entry->d_un.d_ptr);
                 break;
-            case DT_HASH:
+            case DT_HASH: // .hash
+                LOGD("find hash segment");
                 self->sysv_hash.buckets_cnt = ((const uint32_t *)(self->load_bias + entry->d_un.d_ptr))[0];
                 self->sysv_hash.chains_cnt = ((const uint32_t *)(self->load_bias + entry->d_un.d_ptr))[1];
                 self->sysv_hash.buckets = &(((const uint32_t *)(self->load_bias + entry->d_un.d_ptr))[2]);
                 self->sysv_hash.chains = &(self->sysv_hash.buckets[self->sysv_hash.buckets_cnt]);
                 break;
             case DT_GNU_HASH:  //.gnu.hash
-                self->gnu_hash.buckets_cnt = ((const uint32_t *)(self->load_bias + entry->d_un.d_ptr))[0];
-                self->gnu_hash.symoffset = ((const uint32_t *)(self->load_bias + entry->d_un.d_ptr))[1];
-                self->gnu_hash.bloom_cnt = ((const uint32_t *)(self->load_bias + entry->d_un.d_ptr))[2];
-                self->gnu_hash.bloom_shift = ((const uint32_t *)(self->load_bias + entry->d_un.d_ptr))[3];
+                LOGD("find gnu.hash segment");
+                self->gnu_hash.buckets_cnt = ((const uint32_t *)(self->load_bias + entry->d_un.d_ptr))[0]; // l_buckets
+                self->gnu_hash.symoffset = ((const uint32_t *)(self->load_bias + entry->d_un.d_ptr))[1];   // symbias
+                self->gnu_hash.bloom_cnt = ((const uint32_t *)(self->load_bias + entry->d_un.d_ptr))[2];   // bitmask_nwords
+                self->gnu_hash.bloom_shift = ((const uint32_t *)(self->load_bias + entry->d_un.d_ptr))[3]; // l_gun_shift
                 self->gnu_hash.bloom = (const ElfW(Addr) *)(self->load_bias + entry->d_un.d_ptr + 16);
                 self->gnu_hash.buckets = (const uint32_t *)(&(self->gnu_hash.bloom[self->gnu_hash.bloom_cnt]));
                 self->gnu_hash.chains = (const uint32_t *)(&(self->gnu_hash.buckets[self->gnu_hash.buckets_cnt]));
@@ -215,8 +217,7 @@ static int xdl_dynsym_load(xdl_t *self) {
     }
     // check
     if (NULL == self->dynstr || NULL == self->dynsym
-        || 0 == self->sysv_hash.buckets_cnt
-        || 0 == self->gnu_hash.buckets_cnt) {
+        || (0 == self->sysv_hash.buckets_cnt && 0 == self->gnu_hash.buckets_cnt)) {
         self->dynstr = NULL;
         self->dynsym = NULL;
         self->sysv_hash.buckets_cnt = 0;
@@ -254,4 +255,6 @@ void *xdl_sym(void *handle, const char *symbol) {
         self->dynsym_try_load = true;
         if (0 != xdl_dynsym_load(self)) return NULL;
     }
+
+    return NULL;
 }
