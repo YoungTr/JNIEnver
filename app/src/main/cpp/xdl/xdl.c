@@ -1,3 +1,8 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "bugprone-suspicious-string-compare"
+#pragma ide diagnostic ignored "cert-err34-c"
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
+
 //
 // Created by YoungTr on 2022/10/26.
 //
@@ -170,6 +175,14 @@ static int xdl_iterate_callback(struct dl_phdr_info *info, size_t size, void *da
     (*self)->dynsym_try_load = false;
     return 1;
 }
+static uint32_t xdl_gnu_hash(const uint8_t *name) {
+    uint32_t h = 5381;
+
+    while (*name) {
+        h += (h << 5) + *name++;
+    }
+    return h;
+}
 
 static int xdl_dynsym_load(xdl_t *self) {
     // find the dynamic segment
@@ -246,6 +259,43 @@ void *xdl_close(void *handle) {
 
 }
 
+static ElfW(Sym) *xdl_dynsym_find_symbol_use_gnu_hash(xdl_t *self, const char *sym_name) {
+    uint32_t hash = xdl_gnu_hash((const uint8_t *)sym_name);
+
+    static uint32_t elfclass_bits = sizeof(ElfW(Addr)) * 8;
+    size_t word = self->gnu_hash.bloom[(hash / elfclass_bits) % self->gnu_hash.bloom_cnt];
+    size_t mask = 0 | (size_t)1 << (hash % elfclass_bits) |
+                  (size_t)1 << ((hash >> self->gnu_hash.bloom_shift) % elfclass_bits);
+
+    // if at least one bit is not set, this symbol is surely missing
+    if ((word & mask) != mask) return NULL;
+
+    // ignore STN_UNDEF
+    uint32_t i = self->gnu_hash.buckets[hash % self->gnu_hash.buckets_cnt];
+    if (i < self->gnu_hash.symoffset) return NULL;
+
+    LOGD("find bucket i = %d", i);
+
+    // loop through the chain
+    while (1) {
+        ElfW(Sym) *sym = self->dynsym + i;
+        uint32_t sym_hash = self->gnu_hash.chains[i - self->gnu_hash.symoffset];
+
+        if ((hash | (uint32_t)1) == (sym_hash | (uint32_t)1)) {
+            if (0 == strcmp(self->dynstr + sym->st_name, sym_name)) {
+                LOGD("find target sym i = %d", i);
+                return sym;
+            }
+        }
+
+        // chain ends with an element with the lowest bit set to 1
+        if (sym_hash & (uint32_t)1) break;
+        i++;
+    }
+
+    return NULL;
+}
+
 void *xdl_sym(void *handle, const char *symbol) {
     if (NULL == handle || NULL == symbol) return NULL;
 
@@ -256,5 +306,11 @@ void *xdl_sym(void *handle, const char *symbol) {
         if (0 != xdl_dynsym_load(self)) return NULL;
     }
 
-    return NULL;
+    ElfW(Sym) *sym = NULL;
+
+    sym = xdl_dynsym_find_symbol_use_gnu_hash(self, symbol);
+    if (NULL == sym) return NULL;
+
+    return (void *) (self->load_bias + sym->st_value);
 }
+#pragma clang diagnostic pop
