@@ -15,7 +15,7 @@ int xdl_iterate_by_link(const char *file_path);
 
 void *xdl_open(const char *filename);
 
-void *xdl_close(void *handle);
+int xdl_close(void *handle);
 
 void *xdl_sym(void *handle, const char *symbol);
 

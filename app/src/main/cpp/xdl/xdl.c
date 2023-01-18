@@ -16,6 +16,7 @@
 #include <link.h>
 #include <stdbool.h>
 #include <malloc.h>
+#include <dlfcn.h>
 #include "xdl.h"
 #include "../xcd_log.h"
 #include "../log.h"
@@ -208,14 +209,12 @@ static int xdl_dynsym_load(xdl_t *self) {
                 self->dynstr = (const char *) (self->load_bias + entry->d_un.d_ptr);
                 break;
             case DT_HASH: // .hash
-                LOGD("find hash segment");
                 self->sysv_hash.buckets_cnt = ((const uint32_t *)(self->load_bias + entry->d_un.d_ptr))[0];
                 self->sysv_hash.chains_cnt = ((const uint32_t *)(self->load_bias + entry->d_un.d_ptr))[1];
                 self->sysv_hash.buckets = &(((const uint32_t *)(self->load_bias + entry->d_un.d_ptr))[2]);
                 self->sysv_hash.chains = &(self->sysv_hash.buckets[self->sysv_hash.buckets_cnt]);
                 break;
             case DT_GNU_HASH:  //.gnu.hash
-                LOGD("find gnu.hash segment");
                 self->gnu_hash.buckets_cnt = ((const uint32_t *)(self->load_bias + entry->d_un.d_ptr))[0]; // l_buckets
                 self->gnu_hash.symoffset = ((const uint32_t *)(self->load_bias + entry->d_un.d_ptr))[1];   // symbias
                 self->gnu_hash.bloom_cnt = ((const uint32_t *)(self->load_bias + entry->d_un.d_ptr))[2];   // bitmask_nwords
@@ -255,8 +254,12 @@ void *xdl_open(const char *filename) {
     return self;
 }
 
-void *xdl_close(void *handle) {
-
+int xdl_close(void *handle) {
+    if (NULL == handle) return -1;
+    xdl_t *self = (xdl_t *) handle;
+    if (NULL != self->pathname) free(self->pathname);
+    free(self);
+    return 0;
 }
 
 static ElfW(Sym) *xdl_dynsym_find_symbol_use_gnu_hash(xdl_t *self, const char *sym_name) {
@@ -283,7 +286,6 @@ static ElfW(Sym) *xdl_dynsym_find_symbol_use_gnu_hash(xdl_t *self, const char *s
 
         if ((hash | (uint32_t)1) == (sym_hash | (uint32_t)1)) {
             if (0 == strcmp(self->dynstr + sym->st_name, sym_name)) {
-                LOGD("find target sym i = %d", i);
                 return sym;
             }
         }
@@ -310,6 +312,8 @@ void *xdl_sym(void *handle, const char *symbol) {
 
     sym = xdl_dynsym_find_symbol_use_gnu_hash(self, symbol);
     if (NULL == sym) return NULL;
+
+    LOGD("sh_ndx: %d\n", sym->st_shndx);
 
     return (void *) (self->load_bias + sym->st_value);
 }

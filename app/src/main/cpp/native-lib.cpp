@@ -6,10 +6,11 @@
 #include "log.h"
 #include "zlib_example.h"
 #include "zlib_util.h"
-#include "ptracer/ptracer.h"
 #include "xdl/xdl.h"
+#include "signal/xcc_signal.h"
 
 #define TAG "JNIEnver"
+
 
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__)
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
@@ -28,6 +29,7 @@ extern "C" JNIEXPORT jstring JNICALL
 Java_com_youngtr_jnievner_MainActivity_stringFromJNI(
         JNIEnv *env,
         jobject /* this */) {
+    register_signal2();
     std::string hello = "Hello from C++12";
     return env->NewStringUTF(hello.c_str());
 }
@@ -245,22 +247,28 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_youngtr_jnievner_DLActivity_nativeDLOpen(JNIEnv *env, jobject thiz) {
 
-//    void *handle = dlopen("libdl.so", RTLD_NOW);
-//    LOGD("handler: %d", (uintptr_t) handle);
-//    if (handle != NULL) {
-//        void *open = dlsym(handle, "__loader_dlopen");
-//        LOGD("open: 0x%u", (uintptr_t) open);
-//    }
+    void *handle = dlopen("/system/lib/libandroid_runtime.so", RTLD_NOW);
+    LOGD("handler: %d", (uintptr_t) handle);
+    if (handle != NULL) {
+        void *open = dlsym(handle, "__loader_dlopen");
+        LOGD("open: 0x%u", (uintptr_t) open);
+    }
 
 //    xdl_iterate_by_link("/apex/com.android.art/lib/libart.so");
-    void *handler = xdl_open("/apex/com.android.art/lib/libart.so");
-    LOGD("handler: 0x%X", (uintptr_t) handler);
-    void *suspend = nullptr;
-    if (nullptr != handler) {
-       suspend =  xdl_sym(handler, "_ZN3art16ScopedSuspendAllC1EPKcb");
-    }
-    LOGD("suspend: 0x%X", (uintptr_t) suspend);
+//    void *handler = xdl_open("/apex/com.android.art/lib/libart.so");
+//    LOGD("handler: 0x%X", (uintptr_t) handler);
+//    void *suspend = nullptr;
+//    if (nullptr != handler) {
+//       suspend =  xdl_sym(handler, "_ZN3art16ScopedSuspendAllC1EPKcb");
+//    }
+//    LOGD("suspend: 0x%X", (uintptr_t) suspend);
 
 
 //xdl_iterate_by_maps("/apex/com.android.art/lib/libart.so");
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_youngtr_jnievner_MainActivity_testCrash(JNIEnv *env, jobject thiz) {
+    testCrash();
+    throw "testCrash!!!";
 }

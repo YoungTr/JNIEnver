@@ -34,7 +34,8 @@ add_library( # Sets the name of the library.
         ./ptracer/ptracer.c
         xdl/xdl.c
         zlib_example.c
-        zlib_util.c)
+        zlib_util.c
+        signal/xcc_signal.c)
 
 #target_include_directories(jnievner PUBLIC ${MBEDTSL_INCLUDE})
 

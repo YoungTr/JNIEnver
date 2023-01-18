@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 
 import com.youngtr.jnievner.databinding.ActivityMainBinding;
@@ -62,6 +63,10 @@ public class MainActivity extends AppCompatActivity {
 
 //        String stream = getStream();
 //        Log.d("JNIEnver", "get stream: " + stream);
+
+        binding.crashText.setOnClickListener(v -> {
+            testCrash();
+        });
     }
 
     /**
@@ -95,4 +100,6 @@ public class MainActivity extends AppCompatActivity {
     public native String getStream();
 
     public native void zlib(String source, String dest);
+
+    public native void testCrash();
 }
