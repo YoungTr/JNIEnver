@@ -270,5 +270,4 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_youngtr_jnievner_MainActivity_testCrash(JNIEnv *env, jobject thiz) {
     testCrash();
-    throw "testCrash!!!";
 }

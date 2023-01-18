@@ -45,6 +45,19 @@ static void crash_signal_handler(int sig, siginfo_t *si, void *uc) {
     signal_crash_unregister();
 }
 
+static int xc_test_call_4(int v) {
+    int *a = NULL;
+
+    LOGD("before crash - %d", v);
+    *a = v; // crash!
+    LOGD("after crash - %d", v);
+
+    (*a)++;
+    v = *a;
+
+    return v;
+}
+
 int register_signal(void (*handler)(int, siginfo_t *, void *)) {
     stack_t ss;
     if (NULL == (ss.ss_sp = calloc(1, SIGNAL_CRASH_STACK_SIZE))) return XCC_ERRNO_NOMEM;
@@ -74,8 +87,5 @@ int register_signal2() {
 }
 
 void testCrash() {
-    int b = 0;
-    int a = 100;
-    int v = 100 / 0;
-    LOGD("testCrash value = %d", v);
+    xc_test_call_4(100);
 }
