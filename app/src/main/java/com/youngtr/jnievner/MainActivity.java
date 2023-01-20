@@ -36,6 +36,10 @@ public class MainActivity extends AppCompatActivity {
         TextView tv = binding.sampleText;
         tv.setText(stringFromJNI());
 
+        Log.d("JNIEnver",
+                "name: " + Thread.currentThread().getName() + ", id: " + Thread.currentThread().getId());
+
+
         visitField();
         tv.setText(tv.getText() + ":" + name + ":" + staticName);
 
@@ -53,13 +57,13 @@ public class MainActivity extends AppCompatActivity {
 
         dynamicRegister("Tom");
 
-        initFile(getFilesDir().getAbsolutePath() + File.separator + "test.log");
+//        initFile(getFilesDir().getAbsolutePath() + File.separator + "test.log");
 
 
-        compress("123456789abcdefghijklmnopqrstuvwxyz123456789abcdefghijklmnopqrstuvwxyz123456789abcdefghijklmnopqrstuvwxyz");
+//        compress("123456789abcdefghijklmnopqrstuvwxyz123456789abcdefghijklmnopqrstuvwxyz123456789abcdefghijklmnopqrstuvwxyz");
 
-        zlib(getFilesDir().getAbsolutePath() + File.separator + "test.log",
-                getFilesDir().getAbsolutePath() + File.separator + "test1.log");
+//        zlib(getFilesDir().getAbsolutePath() + File.separator + "test.log",
+//                getFilesDir().getAbsolutePath() + File.separator + "test1.log");
 
 //        String stream = getStream();
 //        Log.d("JNIEnver", "get stream: " + stream);

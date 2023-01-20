@@ -2,6 +2,7 @@
 #include <string>
 #include <sys/shm.h>
 #include <dlfcn.h>
+#include <pthread.h>
 #include "mbedtls/aes.h"
 #include "log.h"
 #include "zlib_example.h"
@@ -86,6 +87,12 @@ Java_com_youngtr_jnievner_MainActivity_getPerson(JNIEnv *env, jobject thiz) {
     jmethodID p_initMethod = env->GetMethodID(p_cls, "<init>", "(Ljava/lang/String;I)V");
     // 调用构造函数
     jobject person = env->NewObject(p_cls, p_initMethod, env->NewStringUTF("Cat"), 20);
+
+    pthread_t tid;
+    tid = pthread_self();
+
+    LOGD("tid: %lu", tid);
+
     return person;
 }
 extern "C"
@@ -110,8 +117,8 @@ Java_com_youngtr_jnievner_MainActivity_getPersons(JNIEnv *env, jobject thiz, job
 
     }
 
-//    char *key = "0123456789abcdef";
-//    char *iv = "fedcba0987654321";
+    char *key = "0123456789abcdef";
+    char *iv = "fedcba0987654321";
 //
 //    static unsigned char KEY[16] = {0};
 //    static unsigned char IV[16] = {0};
@@ -140,6 +147,35 @@ Java_com_youngtr_jnievner_MainActivity_getPersons(JNIEnv *env, jobject thiz, job
 //                          (unsigned char *) pwd,
 //                          buf);
 
+    static unsigned char KEY[16] = {0};
+    static unsigned char IV[16] = {0};
+
+    memcpy(KEY, key, 16);
+    memcpy(IV, iv, 16);
+
+    unsigned char pwd[64] = "hello_worled我的1234567890abcdefghijklmnopqrstuvwxyz12389";
+    unsigned char buf[64];
+    unsigned char def_buf[64];
+
+    LOGD("PWD: %s", pwd);
+
+
+    mbedtls_aes_context context;
+    mbedtls_aes_init(&context);
+
+
+    mbedtls_aes_setkey_enc(&context, KEY, 128);
+
+
+    mbedtls_aes_crypt_cbc(&context, MBEDTLS_AES_ENCRYPT, 64, IV, pwd, buf);
+
+    mbedtls_aes_setkey_dec(&context, KEY, 128);
+
+    memcpy(IV, iv, 16);
+
+    mbedtls_aes_crypt_cbc(&context, MBEDTLS_AES_DECRYPT, 64, IV, buf, def_buf);
+    LOGD("buf: %s", def_buf);
+
 
     return j_array;
 }
@@ -156,7 +192,7 @@ void mbedtls_aes_test(void) {
     unsigned char iv[16];
 
     //明文空间
-    unsigned char plain[64] = "hello_worled1234567890abcdefghijklmnopqrstuvwxyz12389";
+    unsigned char plain[64] = "hello_好的worled1234567890abcdefghijklmnopqrstuvwxyz12389";
     //解密后明文的空间
     unsigned char dec_plain[64] = {0};
     //密文空间
@@ -172,7 +208,7 @@ void mbedtls_aes_test(void) {
         iv[i] = 0x01;
     }
     mbedtls_aes_crypt_cbc(&aes_ctx, MBEDTLS_AES_ENCRYPT, 64, iv, plain, cipher);
-    printf("cipher:%s\r\n", cipher);
+    LOGD("cipher:%s\r\n", cipher);
 
     //设置解密密钥
     mbedtls_aes_setkey_dec(&aes_ctx, key, 128);
@@ -180,8 +216,8 @@ void mbedtls_aes_test(void) {
         iv[i] = 0x01;
     }
     mbedtls_aes_crypt_cbc(&aes_ctx, MBEDTLS_AES_DECRYPT, 64, iv, cipher, dec_plain);
-    printf("dec_plain:%s\r\n", dec_plain);
-    printf("\r\n");
+    LOGD("dec_plain:%s\r\n", dec_plain);
+    LOGD("\r\n");
     mbedtls_aes_free(&aes_ctx);
 }
 
