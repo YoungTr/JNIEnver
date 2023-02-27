@@ -1,0 +1,50 @@
+@startuml
+'https://plantuml.com/activity-diagram-beta
+
+start
+
+skinparam dpi 100
+scale 1000 width
+scale 2000 height
+
+
+partition 初始化 {
+:common_init;
+note left
+1.初始化配置信息,如开始时间、
+    版本信息、日志存放路径等
+2.检查并创建日志文件夹
+3.预先打开一个日志文件描述符，
+    防止崩溃时文件描述符达到上限，
+    无法创建
+end note
+partition crash 初始化流程 {
+:crash_init;
+:calloc 30k 内存;
+note
+这里需要提前申请，**不能在**
+**信号处理函数**中调用 calloc 函数
+end note
+:获取 crash_dumper.so 路径;
+:初始化Java层Callback;
+note
+初始化的时候就建立子线程并一直等待
+(eventfd来通知)，等到捕捉到crash信号时，
+唤醒这条线程dump出crash堆栈，
+并把crash堆栈回调给java
+end note
+:创建管道;
+note
+使用该管道与dump进程通信
+end note
+:注册信号;
+note
+sigaltstack 开辟一块新的空间
+128k作为运行信号处理函数的栈,
+以便在紧急情况下使用的空间
+end note
+}
+}
+stop
+
+@enduml

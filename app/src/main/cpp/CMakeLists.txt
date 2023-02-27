@@ -35,7 +35,8 @@ add_library( # Sets the name of the library.
         xdl/xdl.c
         zlib_example.c
         zlib_util.c
-        signal/xcc_signal.c)
+        signal/xcc_signal.c
+        signal/xcc_unwind.c)
 
 #target_include_directories(jnievner PUBLIC ${MBEDTSL_INCLUDE})
 

@@ -69,7 +69,8 @@ public class MainActivity extends AppCompatActivity {
 //        Log.d("JNIEnver", "get stream: " + stream);
 
         binding.crashText.setOnClickListener(v -> {
-            testCrash();
+//            testCrash();
+            testBacktrace();
         });
     }
 
@@ -106,4 +107,6 @@ public class MainActivity extends AppCompatActivity {
     public native void zlib(String source, String dest);
 
     public native void testCrash();
+
+    public native void testBacktrace();
 }

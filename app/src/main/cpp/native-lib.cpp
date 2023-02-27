@@ -9,6 +9,7 @@
 #include "zlib_util.h"
 #include "xdl/xdl.h"
 #include "signal/xcc_signal.h"
+#include "signal/xcc_unwind.h"
 
 #define TAG "JNIEnver"
 
@@ -306,4 +307,9 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_youngtr_jnievner_MainActivity_testCrash(JNIEnv *env, jobject thiz) {
     testCrash();
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_youngtr_jnievner_MainActivity_testBacktrace(JNIEnv *env, jobject thiz) {
+    test_unwind();
 }
